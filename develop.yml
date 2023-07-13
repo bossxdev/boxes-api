@@ -1,0 +1,31 @@
+#digibox-api/.github/workflows/develop.yml
+name: Digibox Api CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login Digital Ocean and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST_DEV }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /home/digibox-api
+            docker system prune -f
+            git fetch -p
+            git pull origin main
+            docker-compose down
+            docker-compose up -d --build
+            docker ps -a
